@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Cebraspe: Seguros, Legislação e Previdência</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Cores para melhor visibilidade e conforto */
+        .feedback-correct {
+            color: #059669; /* Emerald-600 */
+        }
+        .feedback-incorrect {
+            color: #e11d48; /* Rose-600 */
+        }
+        .btn {
+            @apply px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+        .btn-green { /* Botão Certo */
+            @apply bg-teal-500 hover:bg-teal-600 focus:ring-teal-400;
+        }
+        .btn-red { /* Botão Errado */
+            @apply bg-rose-500 hover:bg-rose-600 focus:ring-rose-400;
+        }
+        .btn-blue { /* Botão Próxima/Navegação */
+            @apply bg-sky-500 hover:bg-sky-600 focus:ring-sky-400;
+        }
+        .btn-gray { /* Botão Reiniciar */
+            @apply bg-slate-500 hover:bg-slate-600 focus:ring-slate-400;
+        }
+        .card {
+            @apply bg-white p-6 sm:p-8 rounded-xl shadow-2xl;
+        }
+        .question-text-color {
+            color: #334155; /* Slate-700 */
+        }
+        .header-title-color {
+            color: #0f766e; /* Teal-700 */
+        }
+        .header-subtitle-color {
+            color: #475569; /* Slate-600 */
+        }
+        .feedback-bg-color {
+            background-color: #f0f9ff; /* Sky-50 */
+        }
+        .difficulty-badge {
+            @apply inline-block px-2 py-0.5 text-xs font-semibold rounded-full mr-2;
+        }
+        .difficulty-basic {
+            @apply bg-green-100 text-green-700;
+        }
+        .difficulty-medium {
+            @apply bg-yellow-100 text-yellow-700;
+        }
+        .difficulty-advanced {
+            @apply bg-red-100 text-red-700;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-sky-100 to-indigo-200 min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div id="quiz-container" class="card w-full max-w-2xl">
+        <header class="mb-6 text-center">
+            <h1 class="text-3xl sm:text-4xl font-bold header-title-color">Quiz Cebraspe: Seguros, Legislação e Previdência</h1>
+            <p class="header-subtitle-color mt-2">Teste os seus conhecimentos sobre os principais conceitos de seguros, previdência e legislação pertinente.</p>
+        </header>
+
+        <div id="question-area" class="mb-6">
+            <div id="difficulty-display" class="mb-2"></div>
+            <p id="question-text" class="text-lg sm:text-xl question-text-color leading-relaxed"></p>
+            <p id="question-counter" class="text-sm text-slate-500 mt-2 text-right"></p>
+        </div>
+
+        <div id="options-area" class="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4 mb-6">
+            <button id="certo-btn" class="btn btn-green w-full sm:w-auto">Certo</button>
+            <button id="errado-btn" class="btn btn-red w-full sm:w-auto">Errado</button>
+        </div>
+
+        <div id="feedback-area" class="mb-6 p-4 rounded-lg feedback-bg-color hidden">
+            <p id="feedback-text" class="text-base font-semibold"></p>
+            <p id="explanation-text" class="text-sm text-slate-600 mt-2"></p>
+        </div>
+
+        <div id="navigation-area" class="text-center">
+            <button id="next-btn" class="btn btn-blue hidden w-full sm:w-auto">Próxima Questão</button>
+        </div>
+
+        <div id="score-area" class="hidden text-center mt-8">
+            <h2 class="text-2xl font-semibold header-title-color">Quiz Finalizado!</h2>
+            <p id="score-text" class="text-xl question-text-color mt-2"></p>
+            <button id="restart-btn" class="btn btn-gray mt-6 w-full sm:w-auto">Reiniciar Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        // Array de questões. Cada objeto contém a afirmação, a resposta correta, a explicação e o nível de dificuldade.
+        const questions = [
+            // Questões Iniciais (15)
+            {
+                statement: "O seguro é um contrato pelo qual o segurado, mediante o pagamento de um prêmio, transfere à seguradora um risco futuro e incerto, que, caso ocorra (sinistro), resultará no pagamento de uma indenização.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Esta é a definição básica de seguro, onde o segurado paga o prêmio para que a seguradora assuma o risco e pague a indenização se o sinistro ocorrer.",
+                difficulty: "basic"
+            },
+            {
+                statement: "O princípio da indenização estabelece que o seguro pode proporcionar lucro ao segurado, permitindo que a indenização seja significativamente superior ao valor real do prejuízo sofrido.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O seguro visa repor a perda sofrida, não gerar lucro. A indenização é limitada ao valor do prejuízo e ao limite máximo da apólice.",
+                difficulty: "basic"
+            },
+            {
+                statement: "Cosseguro ocorre quando uma única seguradora assume integralmente um risco de valor muito elevado, sem a participação de outras seguradoras.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Cosseguro é a divisão de um risco muito grande entre duas ou mais seguradoras, com uma delas atuando como seguradora líder.",
+                difficulty: "basic"
+            },
+            {
+                statement: "Resseguro é a operação pela qual a seguradora (cedente) transfere a uma resseguradora parte ou totalidade de um risco que aceitou, sendo conhecido como o 'seguro da seguradora'.",
+                correctAnswer: "Certo",
+                explanation: "Correto. O resseguro serve para proteger a saúde financeira da seguradora, transferindo parte dos riscos assumidos.",
+                difficulty: "basic"
+            },
+            {
+                statement: "Retrocessão é o processo pelo qual o segurado original transfere diretamente parte do seu risco para uma resseguradora.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Retrocessão é o 'resseguro da resseguradora', onde uma resseguradora transfere para outra resseguradora parte do risco que aceitou de uma seguradora.",
+                difficulty: "basic"
+            },
+            {
+                statement: "O seguro DPVAT, destinado a cobrir danos pessoais causados por veículos automotores de via terrestre, é um exemplo clássico de seguro facultativo no Brasil.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O DPVAT (ou seu sucessor, como o SPVAT) é um exemplo de seguro obrigatório, exigido por lei.",
+                difficulty: "basic"
+            },
+            {
+                statement: "No caso de seguro cumulativo, onde o mesmo bem é segurado contra os mesmos riscos por mais de um contrato, o segurado tem o direito de receber a soma integral das indenizações de todas as apólices, mesmo que isso exceda o valor do prejuízo.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O segurado não pode receber mais do que o valor do prejuízo. As seguradoras dividirão a indenização, respeitando o princípio indenitário.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Em um seguro de vida empresarial, o estipulante é a pessoa física ou jurídica que contrata a apólice em nome de um grupo de segurados (por exemplo, funcionários).",
+                correctAnswer: "Certo",
+                explanation: "Correto. O estipulante é quem negocia e contrata o seguro coletivo para os membros do grupo.",
+                difficulty: "basic"
+            },
+            {
+                statement: "O interesse segurável permite que uma pessoa contrate um seguro para um bem que pertence a um terceiro desconhecido, sem qualquer relação financeira ou legal com esse bem.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O segurado deve ter um interesse financeiro legítimo no bem ou pessoa segurada; caso contrário, o contrato pode ser nulo.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Nos contratos de resseguro automáticos, a seguradora (cedente) e a resseguradora estabelecem um acordo prévio (tratado) pelo qual uma cota de determinados tipos de seguro é automaticamente transferida à resseguradora.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Isso agiliza o processo de resseguro para carteiras específicas, dentro de limites pré-acordados.",
+                difficulty: "medium"
+            },
+            {
+                statement: "No resseguro proporcional, a resseguradora assume integralmente todos os prêmios e sinistros da carteira cedida pela seguradora.",
+                correctAnswer: "Errado",
+                explanation: "Errado. No resseguro proporcional, a resseguradora participa dos prêmios e dos sinistros em uma proporção (percentual) definida no contrato, não integralmente por padrão.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Em um contrato de resseguro de Excesso de Danos por Risco (XL), a resseguradora é responsável por pagar a totalidade de qualquer sinistro, desde o primeiro real, independentemente do valor.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A resseguradora só começa a pagar a partir de um valor de prejuízo (prioridade ou franquia da cedente) que fica a cargo da seguradora. Ela cobre o que 'exceder' essa prioridade, até um limite máximo.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "O resseguro Stop Loss tem como objetivo proteger a seguradora contra a acumulação de perdas em uma carteira específica, quando a sinistralidade total ultrapassa um percentual definido dos prêmios ganhos em um período.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Ele protege o resultado global de uma carteira (ex: sinistralidade agregada), não necessariamente um risco individual de alto valor.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "O resseguro de Catástrofe (CAT XL) é projetado para cobrir perdas frequentes e de baixo valor que afetam a seguradora rotineiramente.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O CAT XL cobre perdas massivas e de baixa frequência resultantes de um único grande evento catastrófico (como um furacão ou terremoto) que atinja muitos segurados ao mesmo tempo.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "O princípio da boa-fé no contrato de seguro exige que apenas a seguradora preste todas as informações relevantes de forma clara e completa, não se aplicando tal dever ao segurado.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O princípio da boa-fé é bilateral, exigindo honestidade e transparência de ambas as partes (segurado e seguradora) durante toda a vigência do contrato, desde a proposta até a liquidação de um eventual sinistro.",
+                difficulty: "basic"
+            },
+            // Questões Adicionais (12)
+             {
+                statement: "O princípio do mutualismo no seguro implica que cada segurado é individualmente responsável por cobrir suas próprias perdas, sem a contribuição de outros segurados.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O mutualismo é a base do seguro, onde as contribuições (prêmios) de muitos formam um fundo para cobrir as perdas de alguns poucos.",
+                difficulty: "basic"
+            },
+            {
+                statement: "A principal finalidade do cosseguro é concentrar riscos de valores elevados em uma única seguradora líder, para simplificar a gestão do contrato.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A finalidade do cosseguro é diluir riscos de valores elevados entre várias seguradoras, permitindo que sejam segurados.",
+                difficulty: "medium"
+            },
+            {
+                statement: "No contrato de resseguro, o segurado original estabelece uma relação contratual direta com a resseguradora, podendo acioná-la diretamente em caso de sinistro.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O contrato do segurado é com a seguradora (cedente). A relação da seguradora com a resseguradora não envolve diretamente o segurado original.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A contratação de um seguro residencial para cobrir danos causados por vendaval é um exemplo de seguro facultativo.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A decisão de contratar um seguro residencial para cobrir eventos como vendaval é uma escolha do proprietário, caracterizando-o como facultativo.",
+                difficulty: "basic"
+            },
+            {
+                statement: "Ao contratar um seguro cumulativo, o segurado não tem a obrigação de informar às seguradoras a existência de outras apólices cobrindo o mesmo bem e os mesmos riscos.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O segurado é obrigado a informar a existência de outros seguros para o mesmo bem e riscos, sob pena de perder o direito à indenização ou de caracterizar má-fé.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O corretor de seguros é um funcionário da seguradora, atuando como seu representante direto na venda de apólices.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O corretor de seguros é um profissional autônomo ou empresa que atua como intermediário entre o segurado e a seguradora, buscando as melhores opções para o cliente.",
+                difficulty: "basic"
+            },
+            {
+                statement: "O prêmio, em um contrato de seguro, refere-se ao valor que a seguradora paga ao segurado em caso de sinistro.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Prêmio é o valor que o segurado paga à seguradora para ter direito à cobertura do seguro. O valor pago pela seguradora em caso de sinistro é a indenização.",
+                difficulty: "basic"
+            },
+            {
+                statement: "A característica da empresarialidade na operação de seguro significa que qualquer grupo de pessoas pode se organizar informalmente para oferecer cobertura securitária, sem necessidade de autorização ou estrutura formal.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A empresarialidade exige que a atividade de seguro seja organizada por uma empresa (seguradora) com capacidade técnica e financeira, autorizada a operar conforme as normas legais (ex: Decreto-Lei nº 73/1966).",
+                difficulty: "medium"
+            },
+            {
+                statement: "Nos contratos de resseguro facultativos, a resseguradora é obrigada a aceitar todos os riscos que lhe são oferecidos pela seguradora cedente.",
+                correctAnswer: "Errado",
+                explanation: "Errado. No resseguro facultativo, a resseguradora tem a 'faculdade' (opção) de aceitar ou recusar cada risco oferecido individualmente pela seguradora.",
+                difficulty: "medium"
+            },
+            {
+                statement: "No resseguro proporcional do tipo quota-parte, a resseguradora participa apenas dos prêmios, não compartilhando a responsabilidade pelos sinistros.",
+                correctAnswer: "Errado",
+                explanation: "Errado. No resseguro proporcional de quota-parte, a resseguradora participa tanto dos prêmios quanto das responsabilidades por sinistros em uma proporção (percentual) definida.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O resseguro Stop Loss visa proteger a seguradora contra um único sinistro de valor excepcionalmente alto em uma apólice específica.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Stop Loss protege a seguradora se a soma de todos os sinistros de uma carteira específica ultrapassar um percentual dos prêmios ganhos (sinistralidade agregada), não um único grande sinistro isolado.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "Em um resseguro de Excesso de Danos por Risco (XL), a 'prioridade' é o valor máximo que a resseguradora pagará em caso de sinistro.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A 'prioridade' (ou franquia da cedente) é o valor do prejuízo que fica por conta da seguradora. A resseguradora cobre o que exceder essa prioridade, até um limite.",
+                difficulty: "advanced"
+            },
+            // Novas 50 Questões (Níveis Básico, Médio e Avançado)
+            // Nível Básico (17 questões)
+            {
+                statement: "A apólice de seguro é o documento que formaliza o contrato entre segurado e seguradora, detalhando as coberturas e condições.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A apólice é o instrumento do contrato de seguro, onde constam os direitos e deveres das partes.",
+                difficulty: "basic"
+            },
+            {
+                statement: "Sinistro é o evento futuro e incerto previsto no contrato de seguro, cuja ocorrência gera a obrigação de indenizar por parte da seguradora.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Sinistro é a materialização do risco coberto pela apólice.",
+                difficulty: "basic"
+            },
+            {
+                statement: "O beneficiário de um seguro é sempre a pessoa que contrata o seguro e paga o prêmio.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O beneficiário é quem recebe a indenização. Pode ser o próprio segurado (ex: seguro de automóvel) ou um terceiro indicado (ex: seguro de vida).",
+                difficulty: "basic"
+            },
+            {
+                statement: "Todo seguro contratado no Brasil é, por definição, um seguro obrigatório.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Existem seguros facultativos (a maioria) e seguros obrigatórios (exigidos por lei, como o antigo DPVAT).",
+                difficulty: "basic"
+            },
+            {
+                statement: "O risco é um elemento essencial do contrato de seguro e se refere a um evento passado que causou prejuízo ao segurado.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O risco é um evento futuro, possível, mas incerto, e independente da vontade das partes.",
+                difficulty: "basic"
+            },
+            {
+                statement: "A franquia em um contrato de seguro é o valor que a seguradora paga ao segurado antes de qualquer indenização.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Franquia é a participação obrigatória do segurado nos prejuízos. A seguradora indeniza o valor que excede a franquia.",
+                difficulty: "basic"
+            },
+            {
+                statement: "O objetivo principal do seguro é permitir que o segurado obtenha lucro em caso de sinistro.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O objetivo é a reposição da perda (indenização), não o enriquecimento do segurado.",
+                difficulty: "basic"
+            },
+            {
+                statement: "O Decreto-Lei nº 73/1966 é uma das principais normas que disciplinam as operações de seguro no Brasil.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Este decreto estabelece o Sistema Nacional de Seguros Privados e regula diversas operações.",
+                difficulty: "basic"
+            },
+            {
+                statement: "A SUSEP (Superintendência de Seguros Privados) é o órgão responsável por fiscalizar o mercado de planos de saúde.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A SUSEP fiscaliza os mercados de seguro, previdência complementar aberta, capitalização e resseguro. Planos de saúde são fiscalizados pela ANS (Agência Nacional de Saúde Suplementar).",
+                difficulty: "basic"
+            },
+            {
+                statement: "O mutualismo é um princípio básico do seguro onde apenas os segurados que sofrem sinistros contribuem para o fundo comum.",
+                correctAnswer: "Errado",
+                explanation: "Errado. No mutualismo, todos os segurados de um grupo contribuem com o prêmio para formar um fundo que cobrirá as perdas de alguns.",
+                difficulty: "basic"
+            },
+            {
+                statement: "A garantia, no contrato de seguro, é a promessa do segurado de pagar o prêmio em dia.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A garantia é a promessa da seguradora de cobrir os prejuízos previstos na apólice caso o sinistro ocorra.",
+                difficulty: "basic"
+            },
+             {
+                statement: "Seguro de responsabilidade civil visa cobrir danos que o segurado cause a si mesmo.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Seguro de responsabilidade civil visa cobrir danos materiais ou corporais que o segurado cause a terceiros.",
+                difficulty: "basic"
+            },
+            {
+                statement: "O prêmio do seguro pode ser pago de uma única vez ou parceladamente.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A forma de pagamento do prêmio é acordada entre segurado e seguradora e consta na apólice.",
+                difficulty: "basic"
+            },
+            {
+                statement: "O endosso é um documento que altera as condições de uma apólice de seguro já emitida, sempre para reduzir coberturas.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O endosso altera a apólice, podendo ser para aumentar ou reduzir coberturas, corrigir dados, etc., com concordância das partes.",
+                difficulty: "basic"
+            },
+            {
+                statement: "Qualquer pessoa pode operar como seguradora no Brasil, bastando ter capital financeiro.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Para operar como seguradora, é preciso ser uma sociedade anônima ou cooperativa com autorização prévia da SUSEP e atender a diversos requisitos legais e técnicos.",
+                difficulty: "basic"
+            },
+            {
+                statement: "O cosseguro é uma forma de resseguro.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Cosseguro é a divisão de um mesmo risco entre várias seguradoras diretamente na contratação. Resseguro é o seguro da seguradora.",
+                difficulty: "basic"
+            },
+            {
+                statement: "A vigência de um contrato de seguro representa o período em que as coberturas são válidas.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A vigência define o início e o fim da validade das garantias oferecidas pela apólice.",
+                difficulty: "basic"
+            },
+
+            // Nível Médio (18 questões)
+            {
+                statement: "Na operação de cosseguro, a seguradora líder é solidariamente responsável pela totalidade do risco, mesmo que as demais cosseguradoras não cumpram sua parte.",
+                correctAnswer: "Errado",
+                explanation: "Errado. No cosseguro, cada seguradora é responsável apenas pela sua cota (percentual) do risco assumido. A líder coordena, mas não assume a insolvência das demais.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A retrocessão é uma operação exclusiva entre seguradoras diretas, não envolvendo resseguradoras.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A retrocessão é o 'resseguro da resseguradora', ou seja, uma resseguradora transfere parte do risco que aceitou para outra resseguradora (ou mesmo para seguradoras locais, se admitido).",
+                difficulty: "medium"
+            },
+            {
+                statement: "O seguro de vida é sempre um seguro obrigatório para todos os cidadãos economicamente ativos.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O seguro de vida é, em sua maioria, facultativo. Pode haver obrigatoriedade em contextos específicos, como em algumas convenções coletivas de trabalho.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Em caso de seguro cumulativo de boa-fé, se o valor total das indenizações pagas pelas diversas seguradoras exceder o valor do dano, o segurado pode reter o excedente como compensação.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Mesmo no seguro cumulativo de boa-fé, a soma das indenizações não pode exceder o valor do prejuízo real, em respeito ao princípio indenitário.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O estipulante de uma apólice de seguro em grupo é sempre o beneficiário final das indenizações.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O estipulante (ex: empresa) contrata o seguro para o grupo (ex: funcionários). Os beneficiários são os próprios segurados do grupo ou seus indicados.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A ausência de interesse segurável no momento da contratação do seguro torna o contrato anulável, mas não nulo de pleno direito.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A ausência de interesse segurável é um vício que geralmente torna o contrato nulo, pois falta um de seus elementos essenciais.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O prêmio de resseguro é pago pela resseguradora à seguradora cedente como compensação pelos riscos transferidos.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O prêmio de resseguro é pago pela seguradora cedente à resseguradora, como contraprestação pela assunção de parte dos riscos.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Um contrato de resseguro automático (tratado) obriga a seguradora a ceder todos os riscos de uma determinada carteira, e a resseguradora a aceitá-los, sem análise individual.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Dentro dos termos e limites do tratado, a cessão e aceitação são automáticas para os riscos que se enquadram nos critérios definidos.",
+                difficulty: "medium"
+            },
+            {
+                statement: "No resseguro proporcional do tipo 'quota-parte', a resseguradora assume uma porcentagem fixa dos prêmios e dos sinistros de cada apólice incluída no contrato.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A divisão de prêmios e responsabilidades por sinistros segue a proporção (quota) estabelecida no contrato para cada risco.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O resseguro não proporcional de 'Excesso de Danos por Risco' (XoL) cobre apenas sinistros que excedam a capacidade financeira total da seguradora cedente.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O XoL cobre a parte do sinistro de um risco individual que excede a 'prioridade' (retenção) da cedente, até um limite máximo contratado, não necessariamente sua capacidade total.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A 'empresarialidade' como elemento da operação de seguro implica que apenas sociedades anônimas podem atuar como seguradoras no Brasil.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Decreto-Lei nº 73/1966 permite que sociedades anônimas ou cooperativas, devidamente autorizadas pela SUSEP, operem em seguros privados.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O princípio da boa-fé objetiva no contrato de seguro se manifesta apenas na fase de contratação, não se estendendo à execução e liquidação do sinistro.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A boa-fé objetiva (lealdade, transparência, cooperação) deve permear todas as fases do contrato, desde as negociações preliminares até após a liquidação do sinistro.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A ocorrência de um sinistro sempre resulta na rescisão automática do contrato de seguro após o pagamento da indenização.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Depende do tipo de seguro e das condições da apólice. Em muitos casos, o contrato continua vigente, podendo haver necessidade de reintegração do limite máximo de garantia.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O 'risco moral' refere-se à probabilidade de ocorrência de eventos da natureza, como enchentes ou terremotos.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Risco moral está associado ao comportamento do segurado que pode aumentar a probabilidade de sinistro ou agravar suas consequências, por descuido ou má-fé. Riscos da natureza são 'riscos físicos' ou 'fundamentais'.",
+                difficulty: "medium"
+            },
+            {
+                statement: "No cosseguro, a apólice é emitida individualmente por cada uma das seguradoras participantes, cada uma com suas próprias condições.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Geralmente, é emitida uma única apólice (ou apólice mestra) pela seguradora líder, especificando a cota de responsabilidade de cada cosseguradora.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A retrocessão facultativa ocorre quando uma resseguradora decide, caso a caso, se aceita ou não transferir parte de um risco que já aceitou de uma seguradora.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Assim como no resseguro facultativo, a retrocessão facultativa envolve negociação individual para cada risco específico.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Seguros obrigatórios, como o de responsabilidade civil do transportador rodoviário de carga (RCTR-C), podem ser contratados com qualquer entidade, mesmo não autorizada pela SUSEP.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Seguros obrigatórios devem ser contratados com seguradoras devidamente autorizadas pela SUSEP a operar na modalidade específica.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O 'salvado' em um contrato de seguro refere-se aos bens que foram completamente destruídos pelo sinistro e não possuem valor econômico.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Salvados são os bens que restam após um sinistro e que ainda possuem algum valor econômico. A seguradora pode tomar posse deles após indenizar o segurado pela perda total.",
+                difficulty: "medium"
+            },
+
+            // Nível Avançado (15 questões)
+            {
+                statement: "Em um contrato de resseguro 'Stop Loss', a responsabilidade da resseguradora é acionada com base na ocorrência de um único sinistro de grande magnitude, independentemente da sinistralidade agregada da carteira.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Stop Loss protege a cedente contra uma sinistralidade agregada (soma de vários sinistros) que excede um percentual pré-definido dos prêmios da carteira em um período, não um único evento.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "A cláusula de 'cut-through' em um contrato de resseguro permite que o segurado original acione diretamente a resseguradora em caso de insolvência da seguradora cedente, mesmo sem previsão legal expressa.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A cláusula de cut-through, quando presente e válida, cria uma exceção à regra geral de que não há vínculo direto entre segurado e resseguradora, visando proteger o segurado em caso de falência da cedente.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "O resseguro financeiro diferencia-se do resseguro tradicional por focar primariamente na transferência de risco de subscrição, com menor ênfase em objetivos de gestão de capital ou resultados financeiros da cedente.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O resseguro financeiro tem como um de seus principais objetivos otimizar a estrutura de capital da cedente, melhorar resultados financeiros ou mitigar riscos de cronometragem (timing risk), com uma transferência de risco de subscrição que pode ser limitada.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "A comissão de resseguro é sempre paga pela resseguradora à cedente como forma de participação nos lucros da carteira ressegurada.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A comissão de resseguro é paga pela resseguradora à cedente, mas sua finalidade principal é compensar a cedente pelos custos de aquisição e administração dos seguros originais. Pode haver comissões de participação nos lucros, mas são distintas.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "Um contrato de resseguro não proporcional do tipo 'Excesso de Danos Agregado' (Aggregate XL) protege a cedente contra a soma de perdas de múltiplos sinistros que excedam um determinado montante durante um período, mesmo que cada sinistro individualmente esteja abaixo da prioridade de um XL por risco.",
+                correctAnswer: "Certo",
+                explanation: "Correto. O Aggregate XL cobre a frequência de perdas, protegendo a cedente quando a soma das perdas de uma carteira ultrapassa um limite agregado, mesmo que os sinistros individuais sejam pequenos.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "A 'franquia da cedente' em um contrato de resseguro de excesso de danos (XL) é o valor máximo que a seguradora cedente pode reter em qualquer sinistro antes de acionar o resseguro.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A 'franquia da cedente' (ou prioridade, ou retenção) é o valor que a cedente *efetivamente retém* e paga antes que a cobertura do ressegurador XL comece. Não é um 'valor máximo que pode reter', mas sim o valor que *deve* reter por sinistro.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "O 'fronting' é uma operação na qual uma seguradora local emite uma apólice em nome de uma resseguradora estrangeira não admitida no país, retendo um risco mínimo ou nulo e transferindo a quase totalidade para a resseguradora.",
+                correctAnswer: "Certo",
+                explanation: "Correto. O fronting é usado para permitir que resseguradoras sem licença local acessem riscos, com a seguradora local atuando como 'fachada' e cedendo o risco via resseguro.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "No Brasil, as operações de resseguro e retrocessão são de livre negociação, não havendo qualquer tipo de restrição ou preferência para resseguradores locais.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A legislação brasileira (ex: LC 126/07 e regulamentações da SUSEP) estabelece certas regras e, historicamente, houve períodos com oferta preferencial a resseguradores locais e outras exigências para cessão a resseguradores estrangeiros.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "A 'cláusula de horas' em um contrato de resseguro de catástrofe (CAT XL) define o período máximo durante o qual perdas decorrentes de um mesmo evento catastrófico podem ser agregadas para fins de acionamento da cobertura.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Esta cláusula (ex: 72 horas para furacões) é crucial para delimitar o que constitui um único evento catastrófico para fins de resseguro.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "O resseguro proporcional do tipo 'Excedente de Responsabilidade' (Surplus Share) permite à cedente maior flexibilidade na retenção de riscos em comparação com o 'Quota-Parte', pois a cessão só ocorre para a parte do risco que excede a capacidade de retenção da cedente por apólice.",
+                correctAnswer: "Certo",
+                explanation: "Correto. No Surplus, a cedente define sua retenção por risco (linha), e só o excedente é cedido ao ressegurador, proporcionalmente, até um limite de capacidade do contrato.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "A 'perda máxima provável' (PML) é um conceito irrelevante para a subscrição de resseguro de catástrofe, uma vez que tais contratos cobrem eventos de baixíssima probabilidade.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A PML é fundamental na análise e precificação de resseguros de catástrofe, pois estima a maior perda que se espera de um evento com um determinado período de retorno, auxiliando na definição de limites e prioridades.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "Um 'ressegurador cativo' é uma entidade de resseguro criada por uma empresa não seguradora com o objetivo principal de ressegurar os riscos de suas próprias operações ou de suas subsidiárias.",
+                correctAnswer: "Certo",
+                explanation: "Correto. As cativas são uma forma de autogestão de riscos, permitindo acesso direto ao mercado de resseguro e maior controle sobre o programa de seguros do grupo.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "A 'sub-rogação' no contexto do seguro e resseguro permite que a seguradora (ou resseguradora, se aplicável), após pagar a indenização, busque o ressarcimento junto a terceiros que causaram o dano.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A seguradora se sub-roga nos direitos do segurado contra o causador do dano, até o limite da indenização paga.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "Contratos de resseguro 'finite risk' (risco finito) caracterizam-se pela transferência significativa e ilimitada de risco de subscrição da cedente para a resseguradora.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Contratos de risco finito geralmente envolvem uma transferência limitada de risco de subscrição e um componente significativo de risco de cronometragem (timing risk), com foco em objetivos financeiros e contábeis, e limites de perda para a resseguradora.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "A 'taxa de sinistralidade' (loss ratio) em resseguro é calculada dividindo-se os prêmios ganhos pelos sinistros ocorridos, sendo ideal que seja superior a 100% para indicar lucratividade.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A taxa de sinistralidade é calculada como (Sinistros Ocorridos / Prêmios Ganhos). Um índice abaixo de 100% geralmente indica que os prêmios foram suficientes para cobrir os sinistros. Se for acima de 100%, indica prejuízo técnico.",
+                difficulty: "advanced"
+            },
+            // Novas Questões Baseadas no PDF Adicional (60 questões)
+            // Previdência Complementar Aberta
+            {
+                statement: "A Previdência Complementar Aberta é uma modalidade de previdência obrigatória para todos os trabalhadores com carteira assinada no Brasil.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A Previdência Complementar Aberta tem adesão voluntária; o indivíduo escolhe se quer contratar um plano.",
+                difficulty: "basic"
+            },
+            {
+                statement: "A principal finalidade da Previdência Complementar Aberta é substituir integralmente a aposentadoria oferecida pelo INSS.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A principal finalidade é complementar a aposentadoria oficial do INSS, visando manter ou melhorar o padrão de vida do participante na aposentadoria.",
+                difficulty: "basic"
+            },
+            {
+                statement: "Os planos de Previdência Complementar Aberta são administrados exclusivamente por bancos públicos.",
+                correctAnswer: "Errado",
+                explanation: "Errado. São administrados por Entidades Abertas de Previdência Complementar (EAPC), que podem ser seguradoras e bancos (públicos ou privados), supervisionadas pela SUSEP.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O regime de capitalização, princípio básico da Previdência Complementar Aberta, significa que as contribuições dos participantes atuais pagam os benefícios dos que já estão aposentados.",
+                correctAnswer: "Errado",
+                explanation: "Errado. No regime de capitalização, as contribuições são investidas e formam uma reserva individual para o próprio participante. O regime de repartição é característico da previdência social básica (INSS).",
+                difficulty: "medium"
+            },
+            {
+                statement: "A portabilidade em planos de Previdência Complementar Aberta permite transferir a reserva acumulada para outro plano ou entidade sem a necessidade de resgate e, geralmente, sem incidência de Imposto de Renda no momento da transferência.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A portabilidade é um direito do participante e visa permitir a busca por melhores condições ou rentabilidade, preservando a reserva acumulada.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A taxa de carregamento em planos de previdência complementar aberta é sempre cobrada apenas no momento do resgate final do benefício.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A taxa de carregamento pode ser cobrada sobre cada contribuição (carregamento de entrada), no momento do resgate ou portabilidade (carregamento de saída), ou até mesmo ser isenta em alguns planos.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O ciclo de renda na previdência complementar aberta refere-se ao período em que o participante está ativamente contribuindo para a formação de sua reserva.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O ciclo de renda (ou fase de pagamento de benefício) é o período em que o participante para de contribuir e começa a receber o benefício (renda mensal, por exemplo).",
+                difficulty: "basic"
+            },
+
+            // Planos com cobertura por sobrevivência (PGBL, VGBL)
+            {
+                statement: "PGBL (Plano Gerador de Benefício Livre) permite que o participante deduza as contribuições da base de cálculo do Imposto de Renda anual, até o limite de 12% da renda bruta, se optar pela declaração completa.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Esta é a principal característica fiscal do PGBL, tornando-o vantajoso para quem declara o IR no modelo completo.",
+                difficulty: "medium"
+            },
+            {
+                statement: "No VGBL (Vida Gerador de Benefício Livre), o Imposto de Renda no momento do resgate ou recebimento do benefício incide sobre o valor total acumulado (principal + rendimentos).",
+                correctAnswer: "Errado",
+                explanation: "Errado. No VGBL, o Imposto de Renda incide apenas sobre os rendimentos auferidos, não sobre o principal contribuído.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O VGBL é tecnicamente classificado como um seguro de vida com cobertura por sobrevivência.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Embora funcione como um plano de previdência, a natureza jurídica do VGBL é de seguro de pessoa.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "Para quem faz a declaração simplificada do Imposto de Renda, o PGBL é geralmente mais indicado que o VGBL devido aos benefícios fiscais na fase de acumulação.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O PGBL é mais indicado para quem faz a declaração completa. Para quem usa o modelo simplificado ou é isento, o VGBL costuma ser mais vantajoso, pois não se aproveitaria da dedução do PGBL e teria tributação sobre o total no futuro.",
+                difficulty: "medium"
+            },
+
+            // Capitalização
+            {
+                statement: "Títulos de capitalização são considerados uma modalidade de investimento financeiro com rentabilidade garantida superior à poupança.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Títulos de capitalização não são primariamente investimentos. Parte do valor pago é destinada a sorteios e despesas administrativas, e a rentabilidade da reserva de capitalização costuma ser baixa (TR + juros pequenos), frequentemente inferior à poupança.",
+                difficulty: "basic"
+            },
+            {
+                statement: "A principal finalidade dos títulos de capitalização é exclusivamente a formação de uma reserva financeira de longo prazo, sem qualquer outro atrativo.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Embora ajudem a guardar dinheiro, um grande atrativo dos títulos de capitalização é a participação em sorteios de prêmios em dinheiro.",
+                difficulty: "basic"
+            },
+            {
+                statement: "Nas contribuições para títulos de capitalização, todo o valor pago pelo titular é direcionado para a cota de capitalização, que forma a reserva a ser resgatada.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A contribuição é dividida em cotas: cota de capitalização (forma a reserva), cota de sorteio (custeia os prêmios) e cota de carregamento (despesas administrativas).",
+                difficulty: "medium"
+            },
+            {
+                statement: "O resgate antecipado de um título de capitalização garante ao titular o recebimento de 100% do valor pago a título de cota de capitalização, sem quaisquer penalidades.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O resgate antecipado geralmente implica em penalidades, e o titular recebe um percentual da reserva de capitalização, que pode ser inferior ao total das cotas de capitalização pagas, especialmente no início do plano.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A modalidade de capitalização 'Popular' tem como foco principal a formação de uma grande reserva financeira, com sorteios de menor importância.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Na modalidade Popular, o foco é maior nos sorteios, com parcelas geralmente mais baixas, e a devolução do dinheiro no final pode ser menor ou inexistente em alguns planos.",
+                difficulty: "basic"
+            },
+            {
+                statement: "A cessão dos direitos de um título de capitalização significa que o titular pode transferir a propriedade do título para outra pessoa, que assume os direitos e deveres.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Se o contrato permitir, o titular pode ceder (vender, doar) seu título a terceiros.",
+                difficulty: "medium"
+            },
+
+            // Proteção Patrimonial Mutualista
+            {
+                statement: "A Proteção Patrimonial Mutualista é uma modalidade de seguro tradicional oferecida por sociedades seguradoras com fins lucrativos.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A Proteção Patrimonial Mutualista é organizada por associações sem fins lucrativos, onde os membros rateiam os custos dos prejuízos ocorridos no grupo.",
+                difficulty: "basic"
+            },
+            {
+                statement: "No sistema de Proteção Patrimonial Mutualista, o valor da contribuição mensal paga pelos associados é fixo e garantido durante toda a vigência do contrato.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A contribuição (rateio) na proteção mutualista é variável, pois depende dos custos e prejuízos ocorridos no grupo em cada período. Se houver muitos sinistros, o rateio pode aumentar.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A administradora de proteção patrimonial mutualista é a própria associação responsável por gerenciar o grupo, receber os rateios e pagar as indenizações ou reparos.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A associação atua como administradora do grupo de proteção mútua.",
+                difficulty: "basic"
+            },
+            {
+                statement: "O contrato de participação em grupo de proteção patrimonial mutualista é informal e não necessita detalhar os direitos e deveres dos associados.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Deve existir um contrato (termo de adesão, regulamento) que estabeleça claramente os direitos, deveres, bens cobertos, forma de rateio e outras condições.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A Lei nº 14.332/2022, que trata da proteção mútua, permite que as associações de proteção veicular utilizem livremente termos como 'seguro', 'seguradora' e 'apólice' para descrever seus serviços.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A Lei nº 14.332/2022 estabelece vedações importantes, proibindo o uso de termos próprios do mercado de seguros para não confundir os consumidores.",
+                difficulty: "advanced"
+            },
+
+            // Legislação Específica (além do DL 73/66 já abordado)
+            // DL 261/67 - Capitalização
+            {
+                statement: "O Decreto-Lei nº 261/1967 regula as operações de seguros de vida e previdência complementar aberta.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Decreto-Lei nº 261/1967 é a principal norma que regula as operações das Sociedades de Capitalização e os títulos de capitalização.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Conforme o DL 261/67, as sociedades de capitalização são obrigadas a constituir provisões técnicas, como a Provisão Matemática para Capitalização, para garantir suas obrigações com os titulares.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A constituição de provisões técnicas é um requisito fundamental para a solvência das sociedades de capitalização, conforme o DL 261/67.",
+                difficulty: "advanced"
+            },
+            // Lei 4.594/64 - Corretores de Seguros
+            {
+                statement: "A Lei nº 4.594/1964 estabelece que o corretor de seguros deve ser obrigatoriamente pessoa jurídica, não sendo permitida a atuação como pessoa física.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A Lei nº 4.594/1964 regulamenta a profissão de corretor de seguros, permitindo a atuação tanto de pessoas físicas quanto de pessoas jurídicas devidamente habilitadas.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Segundo a Lei nº 4.594/64, um dos deveres do corretor de seguros é repassar à seguradora todas as informações fornecidas pelo segurado, mesmo que sejam falsas, isentando-se de responsabilidade.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O corretor tem o dever de agir com diligência e boa-fé, prestando informações corretas. Ele pode ser responsabilizado por falhas ou omissões em sua atuação.",
+                difficulty: "advanced"
+            },
+            // LC 109/2001 - Previdência Complementar
+            {
+                statement: "A Lei Complementar nº 109/2001 dispõe sobre o Regime de Previdência Complementar, abrangendo tanto as Entidades Fechadas (fundos de pensão) quanto as Entidades Abertas (EAPC).",
+                correctAnswer: "Certo",
+                explanation: "Correto. A LC 109/2001 é a principal lei que estrutura o sistema de previdência complementar no Brasil, para entidades abertas e fechadas.",
+                difficulty: "medium"
+            },
+            {
+                statement: "De acordo com a LC 109/2001, a escolha do regime de tributação (progressivo ou regressivo) para planos de previdência complementar aberta é feita pela EAPC no momento da contratação, sem participação do participante.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A escolha do regime de tributação (quando aplicável e disponível) é um direito do participante, a ser exercido no momento da contratação do plano ou em janelas específicas, conforme a legislação.",
+                difficulty: "advanced"
+            },
+            // LC 126/2007 - Resseguro
+            {
+                statement: "A Lei Complementar nº 126/2007 manteve o monopólio do IRB-Brasil Re S.A. nas operações de resseguro no país.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A LC 126/2007 promoveu a abertura do mercado de resseguros no Brasil, extinguindo o monopólio do IRB e permitindo a atuação de resseguradores locais, admitidos e eventuais.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Resseguradores 'eventuais', conforme a LC 126/2007, são aqueles com sede no Brasil e objeto exclusivo de operações de resseguro.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Resseguradores 'eventuais' têm sede no exterior, não possuem escritório de representação no Brasil, mas podem realizar operações esporádicas conforme as regras da SUSEP. Resseguradores 'locais' são os constituídos no Brasil com objeto exclusivo de resseguro.",
+                difficulty: "advanced"
+            },
+            // Lei 14.430/2022 - Letra de Risco de Seguro (LRS)
+            {
+                statement: "A Letra de Risco de Seguro (LRS), instituída pela Lei nº 14.430/2022, é um título de capitalização que visa financiar projetos de infraestrutura.",
+                correctAnswer: "Errado",
+                explanation: "Errado. A LRS é um título de crédito representativo de dívida subordinada, vinculado a riscos de seguros ou resseguros, com a finalidade de transferir esses riscos para o mercado de capitais.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Apenas resseguradores locais podem emitir Letras de Risco de Seguro (LRS) diretamente, segundo a Lei nº 14.430/2022.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A lei permite que seguradoras, EAPCs e sociedades de capitalização emitam LRS por meio de uma Sociedade Seguradora de Propósito Específico (SSPE), mas resseguradores locais podem emitir diretamente.",
+                difficulty: "advanced"
+            },
+            // Mais questões sobre DL 73/66 (com base no novo material)
+            {
+                statement: "O Art. 1º do Decreto-Lei nº 73/66, com a redação dada pela Lei Complementar nº 213/2025, passou a abranger também as operações de proteção patrimonial mutualista.",
+                correctAnswer: "Certo",
+                explanation: "Correto. A redação do Art. 1º foi alterada pela LC 213/2025 para incluir as operações de proteção patrimonial mutualista no âmbito do decreto-lei.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Conforme o Art. 4º, parágrafo único, do DL 73/66 (acrescido pela Lei nº 9.932/1999), as regras para sociedades seguradoras não se aplicam, em nenhuma hipótese, aos estabelecimentos de resseguro e retrocessão.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O parágrafo único do Art. 4º estabelece que as regras para sociedades seguradoras aplicam-se, no que couber, aos estabelecimentos autorizados a operar em resseguro e retrocessão.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "O Art. 5º do DL 73/66, com redação da LC 213/2025, estabelece que um dos objetivos da política de seguros privados é coordená-la exclusivamente com a política de investimentos dos estados e municípios.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Art. 5º, V, menciona a coordenação das políticas de seguros com a política de investimentos do governo federal.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O Art. 9º do DL 73/66 (com menção à Lei nº 15.040/2024) determina que os seguros só podem ser contratados mediante propostas assinadas fisicamente pelo segurado, vedando meios eletrônicos.",
+                correctAnswer: "Errado",
+                explanation: "Errado. Embora o Art. 9º mencione propostas assinadas, a legislação e a prática evoluíram para aceitar meios eletrônicos. A referência à Lei nº 15.040/2024 sugere atualizações que podem inclusive facilitar contratações digitais.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O Art. 14 do DL 73/66 permite a contratação de seguros com cláusula de correção monetária, desde que observada a equivalência atuarial e as instruções do CNSP.",
+                correctAnswer: "Certo",
+                explanation: "Correto. O Art. 14 autoriza a correção monetária nos contratos de seguro sob essas condições.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O Art. 19 do DL 73/66, que previa isenção tributária federal irrestrita para operações de Seguro Rural, foi revogado pela Lei Complementar nº 137/2010.",
+                correctAnswer: "Certo",
+                explanation: "Correto. O dispositivo que concedia essa isenção foi revogado, conforme indicado no material.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "O Art. 22 do DL 73/66 proíbe instituições financeiras públicas de realizar operações de crédito com pessoas jurídicas que estejam adimplentes com seus seguros obrigatórios.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Art. 22 proíbe tais operações de crédito com pessoas jurídicas e firmas individuais que estejam INADIMPLENTES com seguros obrigatórios.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O Art. 31 do DL 73/66 assegura o direito à ampla defesa em qualquer processo por infração ao decreto-lei, considerando nulas as decisões que não observarem tal preceito.",
+                correctAnswer: "Certo",
+                explanation: "Correto. Este artigo é uma garantia fundamental do devido processo legal no âmbito administrativo do setor de seguros.",
+                difficulty: "basic"
+            },
+            {
+                statement: "A SUSEP, segundo o Art. 37 do DL 73/66, é administrada por um colegiado de diretores eleitos pelas sociedades seguradoras.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Art. 37 estabelece que a SUSEP é administrada por um Superintendente nomeado pelo Presidente da República.",
+                difficulty: "medium"
+            },
+            {
+                statement: "Conforme o Art. 79 do DL 73/66, as sociedades seguradoras podem reter responsabilidades ilimitadas, desde que comuniquem previamente à SUSEP.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Art. 79 veda às sociedades seguradoras reter responsabilidades que ultrapassem os limites técnicos fixados pela SUSEP, considerando sua situação econômico-financeira e as condições técnicas das carteiras.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "O Art. 86 do DL 73/66 concede aos corretores de seguros privilégio especial sobre as reservas técnicas para recebimento de suas comissões.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Art. 86 concede privilégio especial aos segurados e beneficiários sobre as reservas técnicas, fundos e provisões para recebimento de indenizações.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "As sociedades cooperativas de seguros, conforme o Art. 88-A do DL 73/66, podem ser constituídas para múltiplas finalidades, incluindo atividades comerciais diversas, além da operação de seguros.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Art. 88-A (introduzido pela LC 213/2025) estabelece que devem ser constituídas exclusivamente para a finalidade de operar seguros.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A administração de um grupo de proteção patrimonial mutualista, segundo o Art. 88-H do DL 73/66, pode ser realizada por qualquer tipo de empresa, incluindo sociedades limitadas sem experiência no setor.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Art. 88-H (introduzido pela LC 213/2025) determina que a administração é privativa de sociedade por ações com objeto social exclusivo, previamente autorizada pela SUSEP.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "O Art. 88-P do DL 73/66 prevê que o descumprimento de determinações da SUSEP por instituições operadoras sujeita o infrator apenas a uma advertência verbal.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Art. 88-P (introduzido pela LC 213/2025) sujeita o infrator a multa cominatória diária pelo descumprimento.",
+                difficulty: "medium"
+            },
+            {
+                statement: "A nomeação de um diretor-fiscal pela SUSEP, conforme o Art. 89 do DL 73/66, ocorre apenas em casos de comprovada fraude administrativa, não se aplicando a situações de insuficiência de cobertura de reservas.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Art. 89 prevê a nomeação de diretor-fiscal em caso de insuficiência de cobertura de reservas técnicas, fundos especiais ou provisões, ou má situação econômico-financeira, entre outras irregularidades.",
+                difficulty: "advanced"
+            },
+            {
+                statement: "A liquidação compulsória de uma sociedade seguradora, segundo o Art. 97 do DL 73/66, é processada pelo Banco Central do Brasil.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Art. 97 estabelece que a liquidação compulsória (ou voluntária com autorização) é processada pela SUSEP.",
+                difficulty: "medium"
+            },
+            {
+                statement: "O Art. 127-A do DL 73/66 (com redação da LC 137/2010) define as entidades autorreguladoras do mercado de corretagem como órgãos públicos vinculados diretamente ao CNSP.",
+                correctAnswer: "Errado",
+                explanation: "Errado. O Art. 127-A descreve as entidades autorreguladoras como entidades com autonomia administrativa e financeira, supervisionadas pela SUSEP, não como órgãos públicos vinculados ao CNSP.",
+                difficulty: "advanced"
+            },
+            // --- FIM DAS 70 NOVAS QUESTÕES (V5.1) ---
+
+            // --- INÍCIO DAS 93 NOVAS QUESTÕES (V5.2 - RUMO A 300) ---
+            // Nível Básico (29 questões)
+            { statement: "A SUSEP é responsável por regular o mercado de planos de previdência complementar fechada.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. A SUSEP regula a previdência complementar aberta. A previdência complementar fechada (fundos de pensão) é regulada pela PREVIC." },
+            { statement: "O 'carregamento' em um plano de previdência é uma taxa destinada a aumentar a rentabilidade da reserva do participante.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. Carregamento é uma taxa cobrada pela EAPC para cobrir despesas administrativas e de gestão do plano." },
+            { statement: "PGBL significa 'Pecúlio Gerador de Benefício Livre'.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. PGBL significa Plano Gerador de Benefício Livre." },
+            { statement: "Em títulos de capitalização, a 'cota de capitalização' é a parte da contribuição que vai para um fundo perdido e não é resgatável.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. A cota de capitalização é a parte que forma a reserva matemática, que é resgatável ao final do prazo ou antecipadamente (com possíveis perdas)." },
+            { statement: "A proteção patrimonial mutualista é uma forma de seguro onde o risco é transferido para uma seguradora.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. Na proteção mutualista, o risco é compartilhado entre os associados de um grupo, não transferido para uma seguradora." },
+            { statement: "O Decreto-Lei nº 73/66 trata exclusivamente das operações de resseguro no Brasil.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. O DL 73/66 é a norma principal do Sistema Nacional de Seguros Privados, abrangendo seguros, resseguros, corretagem, etc." },
+            { statement: "A Lei Complementar nº 109/2001 estabelece as regras para o mercado de capitalização.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. A LC 109/2001 dispõe sobre o Regime de Previdência Complementar (aberta e fechada). Capitalização é regida pelo DL 261/67." },
+            { statement: "O 'resgate' em um plano de previdência complementar aberta é o mesmo que 'portabilidade'.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. Resgate é sacar o dinheiro. Portabilidade é transferir a reserva para outro plano/entidade sem sacar." },
+            { statement: "VGBL é um tipo de plano de previdência indicado apenas para quem faz a declaração completa do Imposto de Renda.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. VGBL é mais indicado para quem faz a declaração simplificada ou é isento, ou para quem já atingiu o limite de dedução do PGBL." },
+            { statement: "Nos títulos de capitalização, os sorteios de prêmios são opcionais e nem todos os títulos oferecem essa característica.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. A participação em sorteios é uma característica fundamental e atrativa dos títulos de capitalização." },
+            { statement: "A administradora de proteção patrimonial mutualista tem como principal objetivo o lucro de seus acionistas.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. A administradora é a própria associação, que não deve ter fins lucrativos, e visa gerenciar o grupo de proteção mútua." },
+            { statement: "O CNSP é o órgão executor da política de seguros privados, responsável pela fiscalização direta das seguradoras.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. O CNSP é o órgão normativo. A SUSEP é o órgão executor e fiscalizador." },
+            { statement: "O seguro de incêndio de bens pertencentes a pessoas jurídicas é sempre facultativo.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. O Art. 20 do DL 73/66 lista o seguro de incêndio de bens de pessoas jurídicas como obrigatório (com exceção para a União)." },
+            { statement: "A 'empresarialidade' no contrato de seguro significa que o segurado deve ser uma empresa.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. Empresarialidade refere-se à necessidade de que a atividade de seguro seja organizada por uma empresa (seguradora) especializada e autorizada." },
+            { statement: "No resseguro proporcional, a resseguradora só paga sinistros que excedam um valor pré-definido pela seguradora.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. Isso descreve o resseguro não proporcional. No proporcional, a resseguradora participa dos prêmios e sinistros em uma proporção definida desde o início." },
+            { statement: "O seguro de vida individual é um exemplo de seguro obrigatório no Brasil.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. O seguro de vida individual é, em regra, facultativo." },
+            { statement: "A 'garantia' em um contrato de seguro é o valor que o segurado paga para ter a cobertura.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. A garantia é a promessa da seguradora de cobrir os prejuízos. O valor pago pelo segurado é o prêmio." },
+            { statement: "O 'interesse segurável' significa que o segurado deve ter interesse em causar o sinistro para receber a indenização.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. Interesse segurável é o interesse financeiro legítimo que o segurado tem no bem ou pessoa segurada, cuja perda lhe causaria prejuízo." },
+            { statement: "A 'franquia da cedente' em resseguro é o valor que a resseguradora paga à seguradora cedente.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. É o valor do prejuízo que a seguradora cedente retém (paga) antes que a cobertura do ressegurador comece." },
+            { statement: "O seguro de responsabilidade civil do transportador aéreo é facultativo.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. O Art. 20 do DL 73/66 o lista como obrigatório." },
+            { statement: "A SUSEP é uma sociedade de economia mista.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. A SUSEP é uma autarquia federal (Art. 35 do DL 73/66)." },
+            { statement: "O corretor de seguros é o responsável final pelo pagamento da indenização ao segurado.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. A seguradora é a responsável pelo pagamento da indenização." },
+            { statement: "Em um contrato de resseguro, o segurado original tem relação direta com o ressegurador.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. A relação do segurado é com a seguradora. O resseguro é o 'seguro da seguradora'." },
+            { statement: "A finalidade do cosseguro é permitir que uma única seguradora assuma riscos muito pequenos.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. A finalidade do cosseguro é permitir que riscos de valores elevados sejam segurados, diluindo a responsabilidade entre várias seguradoras." },
+            { statement: "A 'cota de carregamento' em um título de capitalização é a parte que rende juros para o titular.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. É a parte destinada a cobrir despesas administrativas da sociedade de capitalização." },
+            { statement: "Planos de previdência complementar aberta são exclusivamente para servidores públicos.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. São abertos a qualquer pessoa interessada. Planos para servidores públicos geralmente são de entidades fechadas ou regimes próprios." },
+            { statement: "O resgate de um plano VGBL sempre incide Imposto de Renda sobre o valor total resgatado.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. No VGBL, o IR incide apenas sobre os rendimentos." },
+            { statement: "A proteção patrimonial mutualista é fiscalizada pelo Banco Central do Brasil.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. A legislação mais recente (como a Lei nº 14.332/2022 e alterações no DL 73/66) aponta para a supervisão da SUSEP e do CNSP sobre certos aspectos da proteção mutualista." },
+            { statement: "O seguro de crédito à exportação só pode ser contratado se o CNSP julgar inconveniente.", difficulty: "basic", correctAnswer: "Errado", explanation: "Errado. O Art. 20, 'h', do DL 73/66 o torna obrigatório 'quando julgado conveniente pelo Conselho Nacional de Seguros Privados'." },
+
+            // Nível Médio (58 questões)
+            { statement: "A Lei Complementar nº 213/2025, ao alterar o DL 73/66, incluiu a promoção da educação financeira como um dos objetivos da política de seguros privados.", difficulty: "medium", correctAnswer: "Certo", explanation: "Correto. A promoção da educação financeira e a proteção e defesa dos clientes são objetivos importantes, e a LC 213/2025 atualizou o Art. 5º do DL 73/66 nesse sentido." },
+            { statement: "A contratação de seguros por bilhete, conforme o Art. 10 do DL 73/66, dispensa totalmente a regulamentação do CNSP.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 10 autoriza a contratação por bilhete, mas estabelece que será 'na forma de regulamentação a ser baixada pelo CNSP'." },
+            { statement: "O Fundo de Estabilidade do Seguro Rural (FESR) é constituído, entre outras fontes, por um percentual das multas aplicadas pela SUSEP.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 17 do DL 73/66 detalha as fontes do FESR, que incluem excedentes de lucro, recursos do art. 23 e dotações orçamentárias, mas não menciona diretamente multas da SUSEP como fonte primária." },
+            { statement: "O seguro obrigatório de responsabilidade civil do construtor de imóveis em zonas urbanas cobre apenas danos materiais, excluindo danos pessoais.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 20, 'c', do DL 73/66 refere-se a 'danos a pessoas ou coisas', abrangendo ambos." },
+            { statement: "A aplicação das reservas técnicas das sociedades seguradoras deve priorizar investimentos de altíssimo risco para maximizar a rentabilidade, conforme o DL 73/66.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 29 do DL 73/66 estabelece que a aplicação deve garantir 'remuneração adequada, segurança efetiva e liquidez compatível', seguindo diretrizes do CMN, o que implica uma gestão prudente dos riscos." },
+            { statement: "O CNSP tem competência para regular a instalação e funcionamento das Bolsas de Mercadorias e Futuros.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 32, VI, do DL 73/66 atribui ao CNSP a competência para regular a instalação e funcionamento das Bolsas de Seguro, não de mercadorias e futuros (que são da CVM)." },
+            { statement: "A SUSEP pode autorizar a movimentação de bens oferecidos em garantia das reservas técnicas pelas seguradoras, mesmo sem aprovação prévia do CNSP.", difficulty: "medium", correctAnswer: "Certo", explanation: "Correto. O Art. 36, V, do DL 73/66 (com redação da LC 213/2025) estabelece como atribuição da SUSEP 'autorizar previamente a movimentação dos ativos garantidores das provisões técnicas'." },
+            { statement: "As sociedades seguradoras podem reter responsabilidades em cada risco isolado até o limite de seu capital social integralizado.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 79 do DL 73/66 veda reter responsabilidades que ultrapassem os limites técnicos fixados pela SUSEP, que consideram a situação econômico-financeira e as carteiras, não apenas o capital social." },
+            { statement: "Os segurados de uma sociedade seguradora em liquidação têm privilégio geral sobre todos os bens da massa liquidanda, concorrendo em igualdade com credores trabalhistas.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 86 do DL 73/66 concede aos segurados e beneficiários privilégio especial sobre as reservas técnicas, fundos e provisões. A ordem de preferência na liquidação segue regras específicas." },
+            { statement: "A administração de um grupo de proteção patrimonial mutualista é responsável perante os participantes por prejuízos decorrentes de seus atos ou omissões.", difficulty: "medium", correctAnswer: "Certo", explanation: "Correto. O Art. 88-M do DL 73/66 (com redação da LC 213/2025) estabelece a responsabilidade da administradora." },
+            { statement: "A suspensão de administradores de seguradoras, em caso de processo-crime por atos de gestão, é uma medida que só pode ser determinada judicialmente.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 92 do DL 73/66 prevê a suspensão administrativa das funções pela SUSEP enquanto durar o processo-crime." },
+            { statement: "A liquidação compulsória de uma seguradora implica o vencimento antecipado de todas as suas obrigações.", difficulty: "medium", correctAnswer: "Certo", explanation: "Correto. O Art. 99, II, do DL 73/66 estabelece o vencimento antecipado das obrigações da sociedade em liquidação." },
+            { statement: "A penalidade de inabilitação para o exercício de cargos em entidades do sistema de seguros, prevista no DL 73/66, tem prazo máximo de 5 anos.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 108, III, do DL 73/66 (com redação da LC 137/2010) prevê inabilitação por prazo não inferior a 2 nem superior a 10 anos." },
+            { statement: "O corretor de seguros pode ser sócio ou dirigente de entidade autorreguladora do mercado de corretagem e, ao mesmo tempo, de uma sociedade seguradora.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O DL 73/66 e legislações correlatas estabelecem impedimentos para evitar conflitos de interesse. O Art. 123 e as regras das entidades autorreguladoras geralmente vedam tal acumulação." },
+            { statement: "O Seguro-Saúde instituído pelo DL 73/66 previa cobertura obrigatória para todos os empregados de empresas com mais de 100 funcionários.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. Os Arts. 129 a 135 do DL 73/66 instituíram o Seguro-Saúde, mas não com essa obrigatoriedade específica. Sua implementação e abrangência dependeriam de regulamentação." },
+            { statement: "A rentabilidade em um plano de Previdência Complementar Aberta é a mesma para todos os participantes, independentemente do perfil de investimento escolhido.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. Muitos planos oferecem diferentes perfis de investimento (conservador, moderado, arrojado), e a rentabilidade varia conforme o desempenho da carteira de cada perfil." },
+            { statement: "Em um plano PGBL, se o participante não utilizar o benefício fiscal da dedução anual, no momento do resgate o IR incidirá apenas sobre os rendimentos.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. No PGBL, o IR no resgate incide sobre o valor total resgatado (principal + rendimentos), independentemente de o participante ter usufruído ou não da dedução anual." },
+            { statement: "A modalidade de capitalização 'Incentivo' é aquela em que o titular paga parcelas menores, mas concorre a prêmios de maior valor.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A modalidade 'Incentivo' é usada por empresas para promover produtos/serviços, onde o cliente ganha um título ou participa de sorteios como benefício. A descrição se aproxima mais da modalidade 'Popular'." },
+            { statement: "A cota de capitalização em um título é sempre igual à cota de sorteio.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. As cotas (capitalização, sorteio, carregamento) têm finalidades e percentuais distintos, definidos no plano do título." },
+            { statement: "O rateio mutualista de despesas na proteção patrimonial inclui apenas os custos diretos dos sinistros ocorridos, excluindo despesas administrativas da associação.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O rateio mutualista abrange tanto os custos dos eventos (sinistros) quanto as despesas administrativas para manter a associação funcionando." },
+            { statement: "O DL 261/67 proíbe a cessão dos direitos de um título de capitalização a terceiros.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A cessão de direitos é permitida e prevista, desde que observadas as condições contratuais e regulamentares." },
+            { statement: "A Lei nº 4.594/64 estabelece que o registro do corretor de seguros na SUSEP tem validade indeterminada, não necessitando de renovação.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O registro e a habilitação do corretor podem estar sujeitos a condições de manutenção e renovação, conforme regulamentação da SUSEP." },
+            { statement: "A LC 109/2001 veda a portabilidade de recursos entre planos de EAPCs diferentes, permitindo apenas entre planos da mesma entidade.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A portabilidade é um direito que permite a transferência de recursos entre planos de diferentes EAPCs, observadas as regras." },
+            { statement: "Um ressegurador local, conforme a LC 126/2007, pode ter outras atividades comerciais além da operação de resseguro.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. Resseguradores locais devem ter como objeto social exclusivo a operação de resseguro." },
+            { statement: "A Lei nº 14.430/2022 (LRS) permite que qualquer investidor pessoa física adquira Letras de Risco de Seguro diretamente no mercado primário.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A oferta de LRS pode ser restrita a investidores qualificados ou profissionais, dependendo das características da emissão e da regulamentação da CVM." },
+            { statement: "A Lei nº 14.332/2022 (Proteção Mútua) obriga as associações a constituírem reservas técnicas similares às das seguradoras.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A lei foca no rateio de despesas e em fundos de reserva específicos para a proteção mútua, não exigindo reservas técnicas nos moldes das seguradoras tradicionais." },
+            { statement: "O seguro garantia, após a Lei nº 15.040/2024, passou a ser obrigatório em todos os contratos firmados pela administração pública, independentemente do valor.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A obrigatoriedade e as condições do seguro garantia em contratos públicos são definidas pela Lei de Licitações (Lei 14.133/21) e podem variar conforme o objeto e valor do contrato." },
+            { statement: "O Art. 3º, parágrafo único, do DL 73/66, ao excluir os seguros da Previdência Social, impede que EAPCs ofereçam planos com cobertura de risco por morte ou invalidez.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A exclusão refere-se aos seguros do sistema oficial de previdência social (INSS). EAPCs podem oferecer planos com coberturas de risco (morte, invalidez) como parte da previdência complementar ou seguros de pessoas." },
+            { statement: "O sistema de cosseguro, resseguro e retrocessão visa concentrar os riscos nas maiores seguradoras do mercado.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 4º do DL 73/66 indica que o sistema visa pulverizar os riscos e fortalecer as relações econômicas do mercado." },
+            { statement: "A 'equivalência atuarial' mencionada no Art. 14 do DL 73/66 (correção monetária) significa que o valor da indenização deve ser sempre igual ao valor do prêmio pago.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. Equivalência atuarial refere-se ao equilíbrio técnico entre os prêmios arrecadados e as obrigações futuras da seguradora, considerando probabilidades e fluxos financeiros, para garantir a solvência." },
+            { statement: "O seguro de incêndio de edifícios divididos em unidades autônomas (condomínios) é uma obrigação do síndico, mas não dos condôminos individualmente.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 20, 'f', do DL 73/66 o torna obrigatório para os edifícios. A responsabilidade pela contratação é do condomínio (representado pelo síndico), e o custo é rateado entre os condôminos." },
+            { statement: "A retenção indevida de prêmios por um estipulante, conforme o Art. 21 do DL 73/66, só é punível se o valor retido for superior a 10 salários mínimos.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 21 não estabelece um valor mínimo para a caracterização da retenção indevida e aplicação da multa." },
+            { statement: "O CNSP pode fixar normas gerais de contabilidade e estatística apenas para as sociedades seguradoras, excluindo resseguradores e corretores.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 32, V, do DL 73/66 confere ao CNSP competência para fixar normas gerais de contabilidade e estatística para as entidades subordinadas ao decreto-lei, o que pode abranger diversas categorias." },
+            { statement: "Os recursos financeiros da SUSEP provêm exclusivamente de dotações orçamentárias da União.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 39 e 40 do DL 73/66 indicam outras fontes, como parcela do IOF, multas, juros de depósitos, etc." },
+            { statement: "As sociedades seguradoras podem distribuir lucros livremente, mesmo que isso comprometa a constituição de suas reservas técnicas obrigatórias.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 87 do DL 73/66 veda a distribuição de lucros que possa prejudicar o investimento obrigatório do capital e reserva." },
+            { statement: "A liquidação voluntária de uma sociedade seguradora não necessita de autorização prévia da SUSEP.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 97 do DL 73/66 estabelece que a liquidação voluntária depende de prévia autorização da SUSEP." },
+            { statement: "A penalidade de suspensão do exercício da atividade, prevista no Art. 108 do DL 73/66, não pode exceder 90 dias.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 108, II, (com redação da LC 137/2010) prevê suspensão por prazo não superior a 180 dias, podendo ser prorrogado." },
+            { statement: "O corretor de seguros é impedido de ter qualquer participação societária em empresas que não sejam do ramo de seguros ou corretagem.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. Os impedimentos do Art. 123 do DL 73/66 e outras normas focam em evitar conflitos de interesse com seguradoras ou atividades que comprometam sua isenção, não uma proibição genérica a outras participações." },
+            { statement: "A acumulação de recursos em um plano de previdência complementar aberta é garantida pelo Fundo Garantidor de Créditos (FGC).", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. Planos de previdência complementar não são cobertos pelo FGC. A segurança dos recursos depende da solidez da EAPC e da regulamentação do setor." },
+            { statement: "No PGBL, o benefício fiscal da dedução das contribuições é aplicável mesmo que o participante não contribua para a previdência oficial (INSS ou regime próprio).", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. Para usufruir da dedução do PGBL, o participante também deve ser contribuinte da previdência social oficial." },
+            { statement: "A rentabilidade dos títulos de capitalização é sempre superior à da caderneta de poupança.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A rentabilidade da cota de capitalização dos títulos costuma ser baixa (TR + juros pequenos) e, considerando as cotas de sorteio e carregamento, o retorno final pode ser inferior à poupança." },
+            { statement: "A principal característica da modalidade de capitalização 'Tradicional' é a ausência de sorteios, focando apenas na formação de reserva.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A modalidade Tradicional combina a formação de reserva com a participação em sorteios." },
+            { statement: "O rateio mutualista de despesas na proteção patrimonial é calculado com base no lucro da associação administradora.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O rateio é calculado com base nas despesas efetivas (sinistros e administrativas) do grupo, e a associação não deve ter fins lucrativos." },
+            { statement: "O DL 261/67 estabelece que os prêmios dos sorteios de capitalização devem ser pagos em bens, nunca em dinheiro.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. Os prêmios dos sorteios podem ser pagos em dinheiro ou em bens, conforme o plano do título e a regulamentação." },
+            { statement: "A Lei nº 4.594/64 permite que o corretor de seguros ofereça descontos no prêmio do seguro utilizando sua própria comissão.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A prática de conceder descontos no prêmio utilizando a comissão do corretor é geralmente vedada, pois pode configurar concorrência desleal ou infringir normas tarifárias." },
+            { statement: "A LC 109/2001 define que, na portabilidade, o participante pode transferir os recursos de um PGBL para um VGBL, e vice-versa, sem restrições.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A portabilidade geralmente permite transferir recursos entre planos do mesmo tipo (PGBL para PGBL, VGBL para VGBL) ou de PGBL para VGBL, mas não de VGBL para PGBL, devido às implicações fiscais." },
+            { statement: "Resseguradores 'admitidos' são aqueles que possuem sede no Brasil e atuam exclusivamente no mercado local.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. Resseguradores admitidos têm sede no exterior, mas possuem escritório de representação e cadastro na SUSEP para operar no Brasil. Os com sede no Brasil são os 'locais'." },
+            { statement: "A Lei nº 14.430/2022 (LRS) visa aumentar o risco de solvência das seguradoras ao transferir seus ativos para o mercado de capitais.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A LRS visa transferir riscos (passivos) das seguradoras para o mercado de capitais, podendo, assim, melhorar a gestão de capital e solvência das mesmas." },
+            { statement: "A Lei nº 14.332/2022 (Proteção Mútua) equiparou as associações de proteção veicular às cooperativas de seguro para fins de tributação.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A lei estabeleceu um marco regulatório para as associações de proteção mútua, distinguindo-as das seguradoras, mas não as equiparou automaticamente às cooperativas de seguro para todos os fins, especialmente tributários, que seguem regras próprias." },
+            { statement: "O seguro garantia, conforme a Lei nº 15.040/2024, pode ser utilizado para garantir o pagamento de tributos federais.", difficulty: "medium", correctAnswer: "Certo", explanation: "Correto. O seguro garantia tem diversas aplicações, e a legislação tem evoluído para permitir seu uso em diferentes contextos, incluindo a garantia de obrigações fiscais, conforme regulamentação específica." },
+            { statement: "A 'pulverização de riscos', mencionada no Art. 4º do DL 73/66, refere-se à estratégia das seguradoras de concentrar grandes riscos em poucas apólices.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. Pulverização de riscos significa distribuir os riscos entre um grande número de segurados (no seguro direto) ou entre várias seguradoras/resseguradoras (no cosseguro/resseguro), para que o impacto de um sinistro seja diluído." },
+            { statement: "O seguro de incêndio de bens de pessoa jurídica é obrigatório apenas para empresas com faturamento anual superior a R$ 10 milhões.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 20, 'g', do DL 73/66 torna obrigatório o seguro de incêndio de bens pertencentes a pessoas jurídicas, situados no País, sem estabelecer tal limite de faturamento." },
+            { statement: "A SUSEP pode aplicar a penalidade de cassação da autorização de funcionamento diretamente, sem necessidade de processo administrativo prévio que assegure ampla defesa.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O Art. 31 do DL 73/66 assegura ampla defesa, e o Art. 118 prevê que as infrações são apuradas em processo administrativo." },
+            { statement: "As sociedades seguradoras podem aplicar suas reservas técnicas em qualquer tipo de ativo financeiro, incluindo criptomoedas, sem restrições do CMN.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A aplicação das reservas técnicas deve seguir as diretrizes do Conselho Monetário Nacional (CMN), que estabelece regras e limites para garantir segurança e liquidez (Art. 28 e 29 do DL 73/66)." },
+            { statement: "O 'benefício' em um plano de previdência complementar aberta só pode ser recebido na forma de renda mensal vitalícia.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O benefício pode ser recebido de diversas formas, como renda mensal vitalícia, renda por prazo certo, pagamento único, entre outras, conforme as opções do plano e a escolha do participante." },
+            { statement: "A 'cota de sorteio' nos títulos de capitalização é integralmente revertida para a reserva matemática do titular caso ele não seja sorteado.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A cota de sorteio é destinada a custear os prêmios. Ela não é revertida para a reserva do titular." },
+            { statement: "O 'rateio mutualista de despesas' na proteção patrimonial é sempre decrescente ao longo do tempo, devido ao aumento do número de associados.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. O rateio pode variar (aumentar ou diminuir) dependendo da quantidade e do custo dos eventos (sinistros) e das despesas administrativas do grupo em cada período." },
+            { statement: "A Lei nº 14.652/2023, ao alterar a Lei da Proteção Mútua, proibiu a criação de novas associações de proteção veicular.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. Alterações em leis que regulamentam uma atividade geralmente visam aprimorar as regras de funcionamento, não necessariamente proibir a criação de novas entidades que atendam aos requisitos." },
+            { statement: "A Lei nº 15.040/2024 tornou o seguro garantia facultativo para todas as obras públicas federais.", difficulty: "medium", correctAnswer: "Errado", explanation: "Errado. A Lei de Licitações (Lei 14.133/21) e a Lei 15.040/2024 buscam aprimorar o uso do seguro garantia, que pode ser obrigatório em certas situações de contratos públicos, não o tornando facultativo em todos os casos." },
+
+            // Nível Avançado (6 questões)
+            { statement: "A 'cláusula de estabilização' em contratos de resseguro de longo prazo visa proteger o ressegurador contra flutuações cambiais extremas que afetem o valor dos prêmios e sinistros.", difficulty: "advanced", correctAnswer: "Certo", explanation: "Correto. Cláusulas de estabilização ou de moeda são usadas em contratos internacionais para mitigar riscos cambiais ou de inflação, garantindo maior previsibilidade." },
+            { statement: "O 'resseguro por stop loss agregado' (Aggregate Stop Loss) difere do 'stop loss por risco' (Stop Loss per Risk) por cobrir o excesso de sinistralidade de uma carteira inteira, enquanto o segundo cobre o excesso de um único grande sinistro.", difficulty: "advanced", correctAnswer: "Certo", explanation: "Correto. O Aggregate Stop Loss foca na sinistralidade total de uma carteira em um período, enquanto o Stop Loss por Risco (ou XL por risco) foca em perdas individuais que excedam a prioridade da cedente." },
+            { statement: "A Lei Complementar nº 213/2025, ao introduzir a proteção patrimonial mutualista no escopo do DL 73/66, equiparou as administradoras de proteção patrimonial mutualista às sociedades seguradoras para fins de constituição de capital mínimo e reservas técnicas.", difficulty: "advanced", correctAnswer: "Errado", explanation: "Errado. Embora a LC 213/2025 tenha trazido a proteção mutualista para o DL 73/66, ela estabelece um regime próprio para as administradoras, focando na responsabilidade e gestão dos grupos, não necessariamente equiparando-as em todos os requisitos de capital e reservas das seguradoras tradicionais, dada a natureza distinta da operação (rateio de despesas versus assunção de risco com fins lucrativos)." },
+            { statement: "O 'prazo de graça' em um contrato de seguro refere-se ao período adicional concedido pela seguradora para o segurado comunicar um sinistro após sua ocorrência, sem perda de direitos.", difficulty: "advanced", correctAnswer: "Errado", explanation: "Errado. Prazo de graça geralmente se refere a um período adicional concedido para o pagamento do prêmio vencido, durante o qual a cobertura pode ser mantida. O prazo para comunicação de sinistro é outro, geralmente chamado de 'prazo de aviso de sinistro'." },
+            { statement: "A 'reserva de contingência' que as seguradoras podem ser obrigadas a constituir visa cobrir desvios desfavoráveis na sinistralidade esperada, funcionando como uma proteção adicional à sua solvência.", difficulty: "advanced", correctAnswer: "Certo", explanation: "Correto. Reservas de contingência são fundos adicionais para cobrir flutuações adversas e inesperadas nos sinistros, além das provisões técnicas regulares." },
+            { statement: "A Lei nº 14.430/2022 (LRS) permite a securitização de qualquer tipo de risco financeiro de uma seguradora, incluindo riscos de mercado de seus investimentos, não se limitando a riscos de subscrição de seguros.", difficulty: "advanced", correctAnswer: "Errado", explanation: "Errado. A LRS está vinculada especificamente a riscos de seguros ou resseguros (riscos de subscrição), permitindo a transferência desses passivos contingentes para o mercado de capitais, não de riscos de mercado dos ativos da seguradora." }
+            // --- FIM DAS 93 NOVAS QUESTÕES ---
+        ];
+
+        // Elementos da UI
+        const questionTextEl = document.getElementById('question-text');
+        const questionCounterEl = document.getElementById('question-counter');
+        const certoBtn = document.getElementById('certo-btn');
+        const erradoBtn = document.getElementById('errado-btn');
+        const feedbackAreaEl = document.getElementById('feedback-area');
+        const feedbackTextEl = document.getElementById('feedback-text');
+        const explanationTextEl = document.getElementById('explanation-text');
+        const nextBtn = document.getElementById('next-btn');
+        const scoreAreaEl = document.getElementById('score-area');
+        const scoreTextEl = document.getElementById('score-text');
+        const restartBtn = document.getElementById('restart-btn');
+        const optionsAreaEl = document.getElementById('options-area');
+        const questionAreaEl = document.getElementById('question-area');
+        const difficultyDisplayEl = document.getElementById('difficulty-display');
+
+
+        // Estado do quiz
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // Função para carregar e exibir a questão atual
+        function loadQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                // Embaralhar as questões antes de iniciar ou reiniciar
+                if (currentQuestionIndex === 0) {
+                    shuffleArray(questions);
+                }
+                const currentQuestion = questions[currentQuestionIndex];
+                questionTextEl.textContent = currentQuestion.statement;
+                questionCounterEl.textContent = `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
+                
+                // Exibir nível de dificuldade
+                let difficultyText = '';
+                let difficultyClass = '';
+                switch (currentQuestion.difficulty) {
+                    case 'basic':
+                        difficultyText = 'Nível: Básico';
+                        difficultyClass = 'difficulty-basic';
+                        break;
+                    case 'medium':
+                        difficultyText = 'Nível: Médio';
+                        difficultyClass = 'difficulty-medium';
+                        break;
+                    case 'advanced':
+                        difficultyText = 'Nível: Avançado';
+                        difficultyClass = 'difficulty-advanced';
+                        break;
+                    default:
+                        difficultyText = 'Nível: Não definido';
+                        difficultyClass = 'bg-gray-100 text-gray-700';
+                }
+                difficultyDisplayEl.innerHTML = `<span class="difficulty-badge ${difficultyClass}">${difficultyText}</span>`;
+
+
+                // Resetar e mostrar elementos
+                feedbackAreaEl.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+                certoBtn.disabled = false;
+                erradoBtn.disabled = false;
+                optionsAreaEl.classList.remove('hidden');
+                questionAreaEl.classList.remove('hidden');
+                scoreAreaEl.classList.add('hidden');
+
+            } else {
+                // Fim do quiz
+                showScore();
+            }
+        }
+
+        // Função para embaralhar o array de questões (Algoritmo de Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Função para lidar com a resposta do usuário
+        function handleAnswer(userAnswer) {
+            const currentQuestion = questions[currentQuestionIndex];
+            certoBtn.disabled = true;
+            erradoBtn.disabled = true;
+
+            feedbackAreaEl.classList.remove('hidden');
+            explanationTextEl.innerHTML = `<strong>Resposta Correta: ${currentQuestion.correctAnswer}.</strong><br>${currentQuestion.explanation}`; // Adiciona a resposta correta na explicação
+
+            if (userAnswer === currentQuestion.correctAnswer) {
+                score++;
+                feedbackTextEl.textContent = "Você Acertou!";
+                feedbackTextEl.className = 'text-base font-semibold feedback-correct';
+            } else {
+                feedbackTextEl.textContent = "Você Errou!";
+                feedbackTextEl.className = 'text-base font-semibold feedback-incorrect';
+            }
+            
+            nextBtn.classList.remove('hidden');
+        }
+
+        // Função para mostrar a pontuação final
+        function showScore() {
+            questionAreaEl.classList.add('hidden');
+            optionsAreaEl.classList.add('hidden');
+            feedbackAreaEl.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            difficultyDisplayEl.innerHTML = ''; // Limpar display de dificuldade
+            scoreAreaEl.classList.remove('hidden');
+            
+            let performanceMessage = "";
+            const percentage = (questions.length > 0) ? (score / questions.length) * 100 : 0;
+
+            if (percentage >= 70) {
+                performanceMessage = "Excelente desempenho!";
+            } else if (percentage >= 50) {
+                performanceMessage = "Bom trabalho, continue estudando!";
+            } else {
+                performanceMessage = "Continue se dedicando aos estudos!";
+            }
+            scoreTextEl.textContent = `Você acertou ${score} de ${questions.length} questões (${percentage.toFixed(0)}%). ${performanceMessage}`;
+        }
+
+        // Função para reiniciar o quiz
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion(); // As questões serão reembaralhadas aqui
+        }
+
+        // Event Listeners
+        certoBtn.addEventListener('click', () => handleAnswer("Certo"));
+        erradoBtn.addEventListener('click', () => handleAnswer("Errado"));
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            loadQuestion();
+        });
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Iniciar o quiz ao carregar a página
+        loadQuestion();
+    </script>
+
+</body>
+</html>
